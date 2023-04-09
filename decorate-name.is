@@ -1,0 +1,39 @@
+/// @ 0.12.4
+### {
+  name: "なまえをデコっちゃうプラグイン"
+  version: "0.1.0"
+  author: "taichan"
+  description: "みんなのノートの名前の前後に好きな文字を設定できます"
+  permissions: []
+  config: {
+    prefix: {
+      type: 'string'
+      label: "先頭"
+      description: "名前の前に挿入する文字列"
+      default: ""
+    },
+    suffix: {
+      type: 'string'
+      label: "末尾"
+      description: "名前の後ろに挿入する文字列"
+      default: ""
+    }
+  }
+}
+
+Plugin:register_note_view_interruptor(@(note) {
+  if (note.user.name == null) note.user.name = note.user.username
+  note.user.name = `{Plugin:config.prefix}{note.user.name}{Plugin:config.suffix}`
+
+  if (note.renote != null) {
+    if (note.renote.user.name == null) note.renote.user.name = note.renote.user.username
+
+    note.renote.user.name = `{Plugin:config.prefix}{note.renote.user.name}{Plugin:config.suffix}`
+  }
+  if (note.reply != null) {
+    if (note.reply.user.name == null) note.reply.user.name = note.reply.user.username
+
+    note.reply.user.name = `{Plugin:config.prefix}{note.reply.user.name}{Plugin:config.suffix}`
+  }
+  note
+})

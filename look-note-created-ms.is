@@ -1,0 +1,31 @@
+/// @ 0.12.4
+### {
+  name: "ノートの詳細な投稿日時を表示するプラグイン"
+  version: "0.0.1"
+  author: "taichan"
+  description: "ミリ秒まで見たいとかサーバー上での投稿時間を確認したいあなたへ"
+  permissions: []
+  config: {
+    diff: {
+      type: 'number'
+      label: "UTCとの差"
+      description: "世界標準時と何時間ずれているかを数字で入力してください（日本の場合は「9」）"
+      default: 9
+    }
+  }
+}
+
+@format_date_str(dateStr, diff) {
+  let splittedTime = dateStr.split("T")
+  let time = splittedTime[1].slice(0, 12).split(":")
+  let convertedTime = `{(time[0].to_num() + diff) % 24}:{time[1]}:{time[2]}`
+  let day = splittedTime[0].replace("-", "/")
+  `{day} {convertedTime}`
+}
+
+@select(note) {
+  let date = note.createdAt
+  Mk:dialog("ノートの投稿時間" format_date_str(date, Plugin:config.diff))
+}
+
+Plugin:register_note_action("詳細な投稿時間" select)

@@ -1,0 +1,26 @@
+/// @ 0.12.4
+### {
+  name: "なまえがにゃんになるプラグイン"
+  version: "0.0.2"
+  author: "taichan"
+  description: "みんなねこでかわいいね"
+  permissions: []
+  config: {}
+}
+
+Plugin:register_note_view_interruptor(@(note) {
+  if (note.user.name == null) note.user.name = note.user.username
+  note.user.name = `{note.user.name}:_ni::_lya::_n:`
+
+  if (note.renote != null) {
+    if (note.renote.user.name == null) note.renote.user.name = note.renote.user.username
+
+    note.renote.user.name = `{note.renote.user.name}:_ni::_lya::_n:`
+  }
+  if (note.reply != null) {
+    if (note.reply.user.name == null) note.reply.user.name = note.reply.user.username
+
+    note.reply.user.name = `{note.reply.user.name}:_ni::_lya::_n:`
+  }
+  note
+})

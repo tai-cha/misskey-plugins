@@ -1,0 +1,59 @@
+/// @ 0.12.4
+### {
+  id: "d170676e-41cc-4b43-3303-c05930958ba1"
+  name: "画像のファイル名を乱数化するプラグイン"
+  version: "0.0.2"
+  author: "taichan"
+  description: "添付画像のファイル名を変更する"
+  permissions: ["write:drive"]
+  config: {}
+}
+
+@bool_in_japanese(v) {
+  if (v) return "有効"
+  "無効"
+}
+
+// objのnullなプロパティを再帰的に除去
+@remove_null_property(object) {
+  if Core:type(object) != 'obj' {
+    return object
+  }
+  let new_obj = {}
+  each let kv Obj:kvs(object) {
+    let v = remove_null_property(kv[1])
+    if Core:type(v) != 'null' {
+      Obj:set(new_obj kv[0] v)
+    }
+  }
+  return new_obj
+}
+
+let MK_DATA_LABEL_PREFIX = "@taichan/image_rand_plugin"
+let MK_DATA_LABEL_ENABLED = `{MK_DATA_LABEL_PREFIX}/isEnabled`
+
+@get_is_enabled() {
+  let v = Mk:load(MK_DATA_LABEL_ENABLED)
+  if (v != null) return v
+
+  set_is_enabled(true)
+  true
+}
+
+@set_is_enabled(value) {
+  Mk:save(MK_DATA_LABEL_ENABLED, value)
+}
+
+Plugin:register_post_form_action("画像ファイル名ランダム化の設定を変更" @(){
+  let isEnabled = Mk:confirm("画像ランダム化" `画像ファイル名をランダム化しますか？{Str:lf}現在の設定: {bool_in_japanese(get_is_enabled())}`)
+  set_is_enabled(isEnabled)
+})
+
+Plugin:register_note_post_interruptor(@(note){
+  if (get_is_enabled() && note.fileIds != null) {
+    each let fileId, note.fileIds {
+      Mk:api("drive/files/update", { fileId: fileId, name: Util:uuid() })
+    }
+  }
+  remove_null_property(note)
+})

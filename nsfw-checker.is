@@ -1,0 +1,39 @@
+/// @ 0.12.4
+### {
+  name: "添付画像の公開範囲を確認するプラグイン"
+  version: "0.0.1"
+  author: "taichan"
+  description: "公開して後悔しないように…ね？"
+  permissions: []
+  config: {}
+}
+
+let visivilityInJp = {
+  public: "パブリック"
+  home: "ホーム"
+  followers: "フォロワー"
+  specified: "ダイレクト"
+}
+
+
+@selected(note) {
+  let cw = note.cw != null
+
+  @cw_text(cw) {
+    if (cw) return "CW設定済み"
+    "CW未設定"
+  }
+
+  let filesSenstiveStr = note.files.map(@(file, i) {
+    if (file.isSensitive) return `{i}: NSFW 有効`
+    `{i}: NSFW 無効`
+  }).join(Str:lf)
+
+  var text = [`ノートの公開範囲: {Obj:get(visivilityInJp, note.visibility)}`, cw_text(cw)].join(Str:lf)
+
+  if (note.files.len > 0) text = [text, Str:lf, Str:lf, "添付ファイル", Str:lf, filesSenstiveStr].join()
+
+  Mk:dialog("ノートの閲覧設定", text)
+}
+
+Plugin:register_note_action("ノートの閲覧設定を確認する" selected)
