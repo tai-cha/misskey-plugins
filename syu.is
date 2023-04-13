@@ -1,0 +1,36 @@
+/// @ 0.13.1
+### {
+  name: "すをしゅにしてやるのさ"
+  version: "0.0.2"
+  author: "taichan"
+  description: "「す」を「しゅ」にします"
+  permissions: []
+  config: {}
+}
+
+// thx @salano_ym
+// objのnullなプロパティを再帰的に除去
+@remove_null_property(object) {
+  if Core:type(object) != 'obj' {
+    return object
+  }
+  let new_obj = {}
+  each let kv Obj:kvs(object) {
+    let v = remove_null_property(kv[1])
+    if Core:type(v) != 'null' {
+      Obj:set(new_obj kv[0] v)
+    }
+  }
+  return new_obj
+}
+
+@replace(text) {
+  text.replace("す", "しゅ")
+}
+
+Plugin:register_note_post_interruptor(@(note) {
+  if (note.cw != null) note.cw = replace(note.cw)
+  if (note.text != null) note.text = replace(note.text)
+
+  remove_null_property(note)
+})

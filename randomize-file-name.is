@@ -14,6 +14,7 @@
   "無効"
 }
 
+// thx @salano_ym
 // objのnullなプロパティを再帰的に除去
 @remove_null_property(object) {
   if Core:type(object) != 'obj' {

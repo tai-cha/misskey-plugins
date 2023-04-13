@@ -1,0 +1,17 @@
+/// @ 0.13.1
+### {
+  id: "6586fbf9-800f-41b3-b4f6-fb094c2a9015"
+  name: "強制猫化プラグイン"
+  version: "0.1.0-taichan"
+  author: "taichan / original:syuilo"
+  description: "強制的に猫にします"
+  permissions: []
+  config: {}
+}
+
+Plugin:register_note_view_interruptor(@(note) {
+  note.user.isCat = true
+  if (note.renote != null) note.renote.user.isCat = true
+  if (note.reply != null) note.reply.user.isCat = true
+  note
+})

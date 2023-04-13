@@ -1,0 +1,83 @@
+/// @ 0.13.1
+### {
+  name: "絵文字の後にスペース入れるプラグイン"
+  version: "0.0.2"
+  author: "taichan"
+  description: "絵文字の後に半角英数字が来るときに半角スペースを入れます"
+  permissions: []
+  config: {}
+}
+
+// thx @salano_ym
+// objのnullなプロパティを再帰的に除去
+@remove_null_property(object) {
+  if Core:type(object) != 'obj' {
+    return object
+  }
+  let new_obj = {}
+  each let kv Obj:kvs(object) {
+    let v = remove_null_property(kv[1])
+    if Core:type(v) != 'null' {
+      Obj:set(new_obj kv[0] v)
+    }
+  }
+  return new_obj
+}
+
+@emoji_replace(text) {
+  let HANKAKU_LIST = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split()
+  let splittedText = text.split()
+  var i = -1
+  loop {
+    i += 1
+    if (i >= splittedText.len) break
+
+    // コードブロックをスキップ
+    if (splittedText.slice(i, i + 3).join() == "```") {
+      let blockEnd = splittedText.slice(i + 3, splittedText.len).join().index_of("```")
+      if (blockEnd > 0) i = (i + 3) + blockEnd + 2
+      continue
+    }
+    // インラインコードをスキップ
+    if (splittedText[i] == "`") {
+      let codeEnd = splittedText.slice(i + 1, splittedText.len).join().index_of("`")
+      if (codeEnd > 0) i = (i + 1) + codeEnd
+      continue
+    }
+
+    if (splittedText[i] != ":") continue
+    if (i + 1 < splittedText.len) {
+      if (splittedText[i + 1] == ":") continue
+    }
+
+    let next = splittedText.slice(i + 1, splittedText.len).join().index_of(":")
+    if (next < 0) break
+
+    // 1個先から次の「:」まで
+    let skipForNext = false
+    for let k, next + 1 {
+      let idx = i + 1 + k // i + 1, i + 2...
+      if ([Str:lf, " "].incl(splittedText[idx])) {
+        i = idx
+        break
+      }
+      if (splittedText[idx] != ":") continue
+      
+      skipForNext = true
+      if (idx + 1 >= splittedText.len) break
+      if (HANKAKU_LIST.incl(splittedText[idx + 1])) {
+        splittedText[idx] = `{splittedText[idx]} `
+      }
+      break
+    }
+    if (skipForNext) i += next + 1
+  }
+  splittedText.join()
+}
+
+Plugin:register_note_post_interruptor(@(note) {
+  if (note.cw != null) note.cw = emoji_replace(note.cw)
+  if (note.text != null) note.text = emoji_replace(note.text)
+
+  remove_null_property(note)
+})
